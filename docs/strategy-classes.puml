@@ -1,0 +1,43 @@
+@startuml strategy-classes.puml
+skinparam classAttributeIconSize 0
+
+interface IComparer<T> {
+    + Compare(x : T, y : T) : int
+}
+
+class EmployeeByIDComparer {
+    + Compare(x : Employee, y : Employee) : int
+}
+
+class EmployeeByNameComparer {
+    + Compare(x : Employee, y : Employee) : int
+}
+
+class Employee {
+    - _id : int
+    - _name : string
+    + GetID() : int
+    + GetName() : string
+}
+
+class EmployeeRunner {
+    + Run()
+}
+
+class LogProcessor {
+    - _comparer : IComparer<Employee>
+    + LogProcessor(comparer : IComparer<Employee>)
+}
+
+IComparer <|.. EmployeeByIDComparer
+IComparer <|.. EmployeeByNameComparer
+
+' Остальные связи:
+EmployeeRunner ..> EmployeeByIDComparer : создает
+EmployeeRunner ..> EmployeeByNameComparer : создает
+EmployeeRunner ..> LogProcessor : использует
+LogProcessor o--> IComparer : использует
+EmployeeByIDComparer ..> Employee : сравнивает
+EmployeeByNameComparer ..> Employee : сравнивает
+
+@enduml
