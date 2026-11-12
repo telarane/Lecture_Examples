@@ -1,0 +1,48 @@
+@startuml after-refactoring.puml
+skinparam classAttributeIconSize 0
+
+package "LogHub.Logging" {
+    class LogRecord {
+        + Date : DateTime
+        + Severity : string
+        + Message : string
+    }
+
+    interface ILogParser {
+        + Parse(string line) : LogRecord
+    }
+    class PipeLogParser implements ILogParser
+
+    interface ILogFilter {
+        + ShouldWrite(LogRecord) : bool
+    }
+    class SeverityFilter implements ILogFilter
+
+    interface ILogFormatter {
+        + Format(LogRecord) : string
+    }
+    class PlainFormatter implements ILogFormatter
+
+    interface ILogSink {
+        + Write(string text)
+    }
+    class ConsoleSink implements ILogSink
+    class FileSink implements ILogSink
+
+    class LogProcessor {
+        + LogProcessor(ILogParser, ILogFilter, ILogFormatter, ILogSink)
+        + Process(string logPath)
+    }
+}
+
+' Связи:
+LogProcessor o--> ILogParser
+LogProcessor o--> ILogFilter
+LogProcessor o--> ILogFormatter
+LogProcessor o--> ILogSink
+
+PipeLogParser ..> LogRecord : создает
+PlainFormatter ..> LogRecord : использует
+SeverityFilter ..> LogRecord : использует
+
+@enduml

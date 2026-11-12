@@ -1,0 +1,50 @@
+@startuml before-refactoring.puml
+skinparam classAttributeIconSize 0
+
+package "Implementation.AntiPatterns.GodObject" {
+    class LogProcessingModule {
+        - _configPath : string
+        - _config : Dictionary<string, string>
+        - _connection : FakeDbConnection
+        - _fileWriter : StreamWriter
+        - _written : int
+        - _skipped : int
+        + Run(string logPath)
+        - LoadConfig()
+        - OpenSinks()
+        - ParseLine(string) : LogRecord
+        - Format(LogRecord) : string
+        - Write(LogRecord)
+        - SeverityToInt(string) : int
+    }
+
+    interface ILogSink {
+        + Write(string text)
+        + Flush()
+        + BeginTransaction()
+        + Commit()
+        + Rollback()
+        + Rotate()
+        + GetFileSize() : long
+        + SetConsoleColor(ConsoleColor color)
+    }
+
+    class LogRecord {
+        + Date : DateTime
+        + Severity : string
+        + Message : string
+    }
+
+    class FakeDbConnection {
+        - _connectionString : string
+        - _open : bool
+        + Open()
+        + Execute(string, DateTime, string, string)
+        + Close()
+    }
+}
+
+LogProcessingModule *--> FakeDbConnection : создает
+LogProcessingModule *--> ILogSink : зависит от
+LogProcessingModule ..> LogRecord : создает
+@enduml
