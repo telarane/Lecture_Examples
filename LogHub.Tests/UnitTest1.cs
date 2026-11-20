@@ -1,3 +1,5 @@
+using Xunit; // Строка должна быть ДО namespace
+
 namespace LogHub.Tests;
 
 public class SanityTest

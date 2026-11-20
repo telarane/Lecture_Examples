@@ -1,0 +1,5 @@
+{
+  "log.profile": "console",
+  "log.minSeverity": "Info",
+  "log.file.path": "test_log.txt"
+}
