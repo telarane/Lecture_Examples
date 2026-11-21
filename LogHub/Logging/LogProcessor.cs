@@ -1,28 +1,30 @@
+using LogHub.Importing;
+
 namespace LogHub.Logging;
 
 public class LogProcessor
 {
-    private readonly ILogParser _parser;
+    private readonly ILogImporter _importer; // Зависимость от абстракции (Стратегия)
     private readonly ILogFilter _filter;
     private readonly ILogFormatter _formatter;
     private readonly ILogSink _sink;
 
-    public LogProcessor(ILogParser parser, ILogFilter filter, ILogFormatter formatter, ILogSink sink)
+    public LogProcessor(ILogImporter importer, ILogFilter filter, ILogFormatter formatter, ILogSink sink)
     {
-        _parser = parser;
+        _importer = importer;
         _filter = filter;
         _formatter = formatter;
         _sink = sink;
     }
 
-    public void Process(string logPath)
+    // Метод теперь без параметров, так как импортер сам знает, откуда брать данные
+    public void Process()
     {
         int written = 0;
         int skipped = 0;
 
-        foreach (var line in File.ReadLines(logPath))
+        foreach (var record in _importer.Import())
         {
-            var record = _parser.Parse(line);
             if (record == null || !_filter.ShouldWrite(record))
             {
                 skipped++;
