@@ -11,23 +11,25 @@ public class DiCompositionTest
     [Fact]
     public void Container_CanResolveLogProcessor()
     {
-        // Создаем конфигурацию с нужными ключами
+        // Создаем конфигурацию с НОВЫМИ ключами для импорта
         var config = new ConfigService(new Dictionary<string, string>
         {
-            { "log.profile", "console" }, // Обязательный ключ для логики AddLogHub
+            { "log.profile", "console" },
             { "log.minSeverity", "Warning" },
-            { "log.file.path", "test_log.txt" }
+            { "log.file.path", "test_log.txt" },
+            { "import.source", "json" },   // <--- ДОБАВИТЬ
+            { "import.path", "dummy.json" } // <--- ДОБАВИТЬ
         });
 
         var services = new ServiceCollection();
-        
-        // Передаем конфигурацию в композиционный корень
         services.AddLogHub(config);
 
         using var provider = services.BuildServiceProvider();
 
+        // Act
         var processor = provider.GetService<LogProcessor>();
 
+        // Assert
         Assert.NotNull(processor);
     }
 }

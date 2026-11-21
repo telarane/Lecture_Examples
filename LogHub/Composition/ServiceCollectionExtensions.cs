@@ -1,4 +1,6 @@
 using LogHub.Configuration;
+using LogHub.Importing;
+using LogHub.Importing.Templates;
 using LogHub.Logging;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -6,15 +8,24 @@ namespace LogHub.Composition;
 
 public static class ServiceCollectionExtensions
 {
-    // ОБРАТИТЕ ВНИМАНИЕ: здесь должен быть параметр IConfigService config
     public static IServiceCollection AddLogHub(this IServiceCollection services, IConfigService config)
     {
-        // 1. Конфигурация
         services.AddSingleton(config);
 
-        // 2. Логирование
-        services.AddSingleton<ILogParser, PipeLogParser>();
-        
+        // ВОТ ОНА, СТРАТЕГИЯ: выбор импортера по конфигу
+        services.AddSingleton<ILogImporter>(sp =>
+        {
+            var sourceType = config.GetValue("import.source");
+            var path = config.GetValue("import.path");
+            
+            if (sourceType.Equals("json", StringComparison.OrdinalIgnoreCase))
+                return new JsonEventLogImporterTemplate(path); // Используем шаблонный метод (Задание 3)
+            if (sourceType.Equals("pipe", StringComparison.OrdinalIgnoreCase))
+                return new PlainTextLogImporter(path);
+                
+            throw new ArgumentException($"Неизвестный тип источника: {sourceType}");
+        });
+
         services.AddSingleton<ILogFilter>(sp =>
         {
             var minSeverity = config.GetValue("log.minSeverity");

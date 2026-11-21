@@ -1,0 +1,50 @@
+@startuml lr6-classes.puml
+skinparam classAttributeIconSize 0
+
+package "Importing" {
+    interface ILogImporter {
+        +Import() : IEnumerable<LogRecord>
+    }
+    
+    abstract class LogImporterTemplate {
+        #Open() : IEnumerable<string>
+        #Parse(line : string) : LogRecord
+        #Close() : void
+        #Validate(record : LogRecord) : bool
+        +Import() : IEnumerable<LogRecord>
+    }
+    
+    class JsonEventLogImporterTemplate {
+        #Validate(record : LogRecord) : bool
+    }
+    
+    class PlainTextLogImporter
+    class InMemoryLogImporter
+}
+
+package "Graphs" {
+    class Node {
+        +Id : int
+        +ChildNodes : Node[]
+    }
+    
+    interface IEnumerable<Node>
+    
+    class DepthFirstGraph
+    class BreadthFirstGraph
+    class ManualDfsIterator
+    class YieldDfsEnumerable
+    class CycleDetector
+}
+
+ILogImporter <|.. LogImporterTemplate
+LogImporterTemplate <|-- JsonEventLogImporterTemplate
+LogImporterTemplate <|-- PlainTextLogImporter
+ILogImporter <|.. InMemoryLogImporter
+
+IEnumerable <|.. DepthFirstGraph
+IEnumerable <|.. BreadthFirstGraph
+IEnumerable <|.. ManualDfsIterator
+IEnumerable <|.. YieldDfsEnumerable
+
+@enduml
