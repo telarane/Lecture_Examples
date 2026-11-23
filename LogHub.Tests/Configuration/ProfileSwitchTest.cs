@@ -11,11 +11,16 @@ public class ProfileSwitchTest
     [Fact]
     public void Config_ProfileConsole_ResolvesConsoleSink()
     {
-        // Загружаем конфиг из файла (файл должен лежать рядом с тестами)
+        // Загружаем конфиг из файла
         var config = JsonConfigLoader.Load("Configuration/config.json");
-
-        // Переопределяем профиль на console (чтобы тест не зависел от содержимого файла)
+        
+        // Переопределяем профиль на console
         config.SetValue("log.profile", "console");
+        
+        // ДОБАВЛЯЕМ обязательные ключи для ЛР6/ЛР7
+        config.SetValue("import.source", "json");
+        config.SetValue("import.path", "dummy.json");
+        config.SetValue("log.minSeverity", "Info");
 
         var services = new ServiceCollection();
         services.AddLogHub(config);
@@ -32,6 +37,11 @@ public class ProfileSwitchTest
         
         // Переопределяем профиль на file
         config.SetValue("log.profile", "file");
+        
+        // ДОБАВЛЯЕМ обязательные ключи для ЛР6/ЛР7
+        config.SetValue("import.source", "json");
+        config.SetValue("import.path", "dummy.json");
+        config.SetValue("log.minSeverity", "Info");
 
         var services = new ServiceCollection();
         services.AddLogHub(config);

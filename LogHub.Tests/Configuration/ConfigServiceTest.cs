@@ -27,11 +27,16 @@ public class ConfigServiceTest
     [Fact]
     public void Di_SetThenGet_ReturnsValue()
     {
-        // Создаем экземпляр конфигурации
-        var config = new ConfigService();
-        
+        // Создаем конфиг с обязательными ключами, которые требует AddLogHub
+        var config = new ConfigService(new Dictionary<string, string>
+        {
+            { "import.source", "json" },
+            { "import.path", "dummy.json" },
+            { "log.minSeverity", "Info" }
+        });
+
         using var provider = new ServiceCollection()
-            .AddLogHub(config)
+            .AddLogHub(config) // Передаем заполненный конфиг
             .BuildServiceProvider();
 
         var svc = provider.GetRequiredService<IConfigService>();

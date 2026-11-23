@@ -1,40 +1,51 @@
-using LogHub.Importing;
+using LogHub.Processing.Chain;
+using LogHub.Processing.Mediator;
+using LogHub.Processing.Observer;
 
 namespace LogHub.Logging;
 
 public class LogProcessor
 {
-    private readonly ILogImporter _importer; // Зависимость от абстракции (Стратегия)
-    private readonly ILogFilter _filter;
+    private readonly ILogMediator _mediator; // Вместо ILogImporter!
+    private readonly ILogFilterHandler _filterHandler;
     private readonly ILogFormatter _formatter;
     private readonly ILogSink _sink;
+    private readonly LogSubject _subject;
 
-    public LogProcessor(ILogImporter importer, ILogFilter filter, ILogFormatter formatter, ILogSink sink)
+    public LogProcessor(
+        ILogMediator mediator, 
+        ILogFilterHandler filterHandler, 
+        ILogFormatter formatter, 
+        ILogSink sink,
+        LogSubject subject)
     {
-        _importer = importer;
-        _filter = filter;
+        _mediator = mediator;
+        _filterHandler = filterHandler;
         _formatter = formatter;
         _sink = sink;
+        _subject = subject;
     }
 
-    // Метод теперь без параметров, так как импортер сам знает, откуда брать данные
     public void Process()
     {
         int written = 0;
         int skipped = 0;
 
-        foreach (var record in _importer.Import())
+        // Получаем данные через Посредника
+        foreach (var record in _mediator.FetchNextBatch())
         {
-            if (record == null || !_filter.ShouldWrite(record))
+            if (record == null) continue;
+
+            if (!_filterHandler.Handle(record))
             {
                 skipped++;
                 continue;
             }
 
+            _subject.NotifyPush(record);
             _sink.Write(_formatter.Format(record));
             written++;
         }
-
         Console.WriteLine($"Записано: {written}, пропущено: {skipped}");
     }
 }
