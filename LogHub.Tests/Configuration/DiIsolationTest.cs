@@ -10,9 +10,20 @@ public class DiIsolationTest
     [Fact]
     public void TwoProviders_HaveIndependentConfigState()
     {
-        // Для каждого провайдера создаем СВОЙ экземпляр конфигурации
-        var configA = new ConfigService();
-        var configB = new ConfigService();
+        // Создаем конфиги с ключами, которые нужны для AddLogHub
+        var configA = new ConfigService(new Dictionary<string, string>
+        {
+            { "import.source", "json" },
+            { "import.path", "dummy.json" },
+            { "log.minSeverity", "Info" }
+        });
+        
+        var configB = new ConfigService(new Dictionary<string, string>
+        {
+            { "import.source", "json" },
+            { "import.path", "dummy.json" },
+            { "log.minSeverity", "Info" }
+        });
 
         using var providerA = new ServiceCollection().AddLogHub(configA).BuildServiceProvider();
         using var providerB = new ServiceCollection().AddLogHub(configB).BuildServiceProvider();
@@ -29,7 +40,13 @@ public class DiIsolationTest
     [Fact]
     public void SameProvider_ReturnsSameSingleton()
     {
-        var config = new ConfigService();
+        var config = new ConfigService(new Dictionary<string, string>
+        {
+            { "import.source", "json" },
+            { "import.path", "dummy.json" },
+            { "log.minSeverity", "Info" }
+        });
+
         using var provider = new ServiceCollection().AddLogHub(config).BuildServiceProvider();
 
         var first = provider.GetRequiredService<IConfigService>();

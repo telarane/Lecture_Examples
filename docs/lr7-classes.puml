@@ -1,0 +1,78 @@
+@startuml lr7-classes.puml
+skinparam classAttributeIconSize 0
+
+package "Chain" {
+    interface ILogFilterHandler {
+        +Handle(record : LogRecord) : bool
+        +Next : ILogFilterHandler
+    }
+    abstract class BaseFilterHandler {
+        #Process(record : LogRecord) : bool
+    }
+    class SeverityFilterHandler
+    class AgeFilterHandler
+    class DuplicateFilterHandler
+
+    ILogFilterHandler <|.. BaseFilterHandler
+    BaseFilterHandler <|-- SeverityFilterHandler
+    BaseFilterHandler <|-- AgeFilterHandler
+    BaseFilterHandler <|-- DuplicateFilterHandler
+}
+
+package "Visitor" {
+    interface ILogEntryVisitor {
+        +Visit(entry : SimpleLogEntry)
+        +Visit(entry : ExceptionLogEntry)
+        +Visit(entry : MetricLogEntry)
+    }
+    abstract class LogEntryBase {
+        +Accept(visitor : ILogEntryVisitor)
+    }
+    class SimpleLogEntry
+    class ExceptionLogEntry
+    class MetricLogEntry
+    class TextFormatVisitor
+    class StatisticsVisitor
+
+    LogEntryBase <|-- SimpleLogEntry
+    LogEntryBase <|-- ExceptionLogEntry
+    LogEntryBase <|-- MetricLogEntry
+    
+    ILogEntryVisitor <|.. TextFormatVisitor
+    ILogEntryVisitor <|.. StatisticsVisitor
+}
+
+package "Observer" {
+    interface ILogObserver {
+        +OnLogProcessed(record : LogRecord)
+        +OnLogEventOccurred(source : LogSubject)
+    }
+    class LogSubject {
+        +Subscribe(observer)
+        +Unsubscribe(observer)
+        +NotifyPush(record)
+        +NotifyPull()
+        +LastRecord : LogRecord
+    }
+    class CounterObserver
+    class CriticalAlertObserver
+    class ConsoleWriterObserver
+
+    ILogObserver <|.. CounterObserver
+    ILogObserver <|.. CriticalAlertObserver
+    ILogObserver <|.. ConsoleWriterObserver
+    LogSubject --> ILogObserver : уведомляет
+}
+
+package "Mediator" {
+    interface ILogMediator {
+        +FetchNextBatch() : IEnumerable<LogRecord>
+        +PauseImporter()
+    }
+    class LogMediator {
+        -_importer : ILogImporter
+    }
+    ILogMediator <|.. LogMediator
+}
+
+@enduml
